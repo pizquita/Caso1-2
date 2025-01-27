@@ -26,15 +26,12 @@ pipeline {
                         coverage xml
                     '''
                     junit 'result-unit.xml'
+					
+					bat 'coverage report -m'
+                cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,0,80', lineCoverageTargets: '100,0,90'
                 }
             }
-        }
-        stage('Coverage') {
-            steps {
-               bat 'coverage report -m'
-                cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,0,80', lineCoverageTargets: '100,0,90'
-            }
-        }
+        }        
         stage('Static') {
             steps {
                 bat 'flake8 --format=pylint --exit-zero app >flake8.out'
