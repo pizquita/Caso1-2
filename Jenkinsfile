@@ -29,18 +29,18 @@ pipeline {
                 }
                 
                 bat 'coverage report -m'
-                cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,0,80', lineCoverageTargets: '100,0,90'
+                cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
             }
         }
         stage('Static') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                bat 'flake8 --format=pylint --exit-zero app >flake8.out'
+					bat 'flake8 --format=pylint --exit-zero app >flake8.out'
                     recordIssues(
                         tools: [flake8(name: 'Flake8', pattern: 'flake8.out')],
                         qualityGates: [
                             [threshold: 8, type: 'TOTAL', unstable: true],  // Marcar como UNSTABLE si hay 8 o más hallazgos
-                            [threshold: 10, type: 'TOTAL', failed: false]     // Marcar como UNHEALTHY si hay 10 o más hallazgos
+                            [threshold: 10, type: 'TOTAL']     // Marcar como UNHEALTHY si hay 10 o más hallazgos
                         ]
                     )
                 }
@@ -54,7 +54,7 @@ pipeline {
                         tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')],
                         qualityGates: [
                             [threshold: 4, type: 'TOTAL', unstable: true],  
-                            [threshold: 8, type: 'TOTAL', failed: false]   
+                            [threshold: 8, type: 'TOTAL']   
                         ]
                     )
                 }
