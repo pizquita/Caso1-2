@@ -34,7 +34,7 @@ pipeline {
 							//lanza coverage en las pruebas unitarias para poder utilizar pytest una única vez
 							bat '''
 								SET PYTHONPATH=%WORKSPACE%
-								coverage run --source=app --omit=app\\__init__.py,app\\api.py -m pytest test\\unit --junitxml=result-unit.xml
+								coverage run --branch --source=app --omit=app\\__init__.py,app\\api.py -m pytest test\\unit --junitxml=result-unit.xml
 								coverage xml
 							'''
 							junit 'result-unit.xml'
