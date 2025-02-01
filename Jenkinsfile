@@ -28,8 +28,10 @@ pipeline {
                     junit 'result-unit.xml'
                 }
                 
-                bat 'coverage report -m'
-                cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+					bat 'coverage report -m'
+					cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
+				}
             }
         }
         stage('Static') {

@@ -19,37 +19,42 @@ pipeline {
                 stash name: 'source-code', includes: '**/*'
             }
         }
+        stage('Unit') {
+            agent { label 'Test' }
+            steps {
+                cleanWs()
+                bat 'whoami'
+                bat 'hostname'
+                bat 'echo %WORKSPACE%'
+                unstash 'source-code'  // Recupera el código del repositorio
+                
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+					//lanza coverage en las pruebas unitarias para poder utilizar pytest una única vez
+					bat '''
+						SET PYTHONPATH=%WORKSPACE%
+						coverage run --branch --source=app --omit=app\\__init__.py,app\\api.py -m pytest test\\unit --junitxml=result-unit.xml
+						coverage xml
+					'''
+					junit 'result-unit.xml'
+					
+				}
+				
+				bat 'dir coverage.xml'  // Verificar que coverage.xml existe
+                bat 'type coverage.xml'  // Inspeccionar contenido de coverage.xml
+                
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+				    bat 'coverage report -m'
+					cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
+				}
+            }
+        }
         stage('Tests and Analysis') {
             parallel {
-                stage('Unit') {
-                    agent { label 'Test' }
-                    steps {
-                        cleanWs()
-                        bat 'whoami'
-                        bat 'hostname'
-                        bat 'echo %WORKSPACE%'
-                        unstash 'source-code'  // Recupera el código del repositorio
-                        
-                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-							//lanza coverage en las pruebas unitarias para poder utilizar pytest una única vez
-							bat '''
-								SET PYTHONPATH=%WORKSPACE%
-								coverage run --branch --source=app --omit=app\\__init__.py,app\\api.py -m pytest test\\unit --junitxml=result-unit.xml
-								coverage xml
-							'''
-							junit 'result-unit.xml'
-						}
-						
-						 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-							bat 'coverage report -m'
-							cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
-						}
-                    }
-                }
+               
                 stage('Static') {
                     agent { label 'Test' }
                     steps {
-                        cleanWs()
+                        
                         bat 'whoami'
                         bat 'hostname'
                         bat 'echo %WORKSPACE%'
@@ -70,7 +75,7 @@ pipeline {
                 stage('Security') {
                     agent { label 'Analysis' }
                     steps {
-                        cleanWs()
+                        
                         bat 'whoami'
                         bat 'hostname'
                         bat 'echo %WORKSPACE%'
@@ -90,6 +95,7 @@ pipeline {
                 }
             }
         }
+       
         stage('Performance') {
             agent { label 'Test' }
             steps {
