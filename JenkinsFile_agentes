@@ -12,7 +12,7 @@ pipeline {
                 bat 'hostname'
                 bat 'echo %WORKSPACE%'
                 bat 'echo %WORKSPACE%'
-                git 'https://github.com/pizquita/Caso1-2.git'
+                git branch: 'feature_fix_coverage', url: 'https://github.com/pizquita/Caso1-2.git'
                 bat 'dir && echo %WORKSPACE%'
                 
                 // Guarda el código descargado para futuras etapas
