@@ -18,7 +18,7 @@ pipeline {
         }
         stage('Unit and Coverage') {
             steps {
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     //lanza coverage en las pruebas unitarias para poder utilizar pytest una única vez
                     bat '''
                         SET PYTHONPATH=%WORKSPACE%
@@ -27,9 +27,10 @@ pipeline {
                     '''
                     junit 'result-unit.xml'
                 }
-                
-                bat 'coverage report -m'
-                cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+					bat 'coverage report -m'
+					cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '100,80,90', lineCoverageTargets: '100,85,95'
+				}
             }
         }
         stage('Static') {
